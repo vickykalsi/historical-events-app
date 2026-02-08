@@ -1,0 +1,9 @@
+# node modules
+node_modules/
+
+# .env files
+.env
+.env.*
+
+# dist or build frontend folder
+dist/
