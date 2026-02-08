@@ -3,7 +3,7 @@ import pool from "./db.js"
 async function initDB() {
   try {
     const query1 = await pool.query(`
-      CREATE TABLE IF NOT EXISTS users(
+      CREATE TABLE IF NOT EXISTS he_users(
         id serial PRIMARY KEY,
         username text UNIQUE NOT NULL,
         password_hash text NOT NULL,
@@ -15,7 +15,7 @@ async function initDB() {
       )
     `)
     const query2 = await pool.query(`
-      CREATE TABLE IF NOT EXISTS bookmarks(
+      CREATE TABLE IF NOT EXISTS he_bookmarks(
         id serial PRIMARY KEY,
         user_id integer NOT NULL references users(id) ON DELETE CASCADE,
         event_description text NOT NULL,

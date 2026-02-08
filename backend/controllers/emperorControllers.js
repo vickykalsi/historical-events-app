@@ -5,7 +5,7 @@ import pool from "../db/db.js"
 export async function loginLogic(req, res) {
   try {
     const username = req.body.username.trim().toLowerCase(), password = req.body.password
-    const response = await pool.query(`select id,username,password_hash from users where username=$1`, [username])
+    const response = await pool.query(`select id,username,password_hash from he_users where username=$1`, [username])
     if (response.rows.length === 0)
       return res.status(400).json({ success: false, message: `no user exists with this username` })
     if (await bcrypt.compare(password, response.rows[0].password_hash)) {
@@ -30,7 +30,7 @@ export async function signupLogic(req, res) {
     const username = req.body.username.trim().toLowerCase(), password = req.body.password
     if (password && password.length >= 8) {
       const password_hash = await bcrypt.hash(password, 10)
-      const response = await pool.query(`insert into users(username,password_hash) values($1,$2)`, [username, password_hash])
+      const response = await pool.query(`insert into he_users(username,password_hash) values($1,$2)`, [username, password_hash])
       return res.status(201).json({ sucess: true, message: `successful signup` })
     }
     else
@@ -55,7 +55,7 @@ export function logoutLogic(req, res) {
 export async function addEventsLogic(req, res) {
   try {
     const id = req.user, event = req.body.event;
-    const response = await pool.query(`insert into bookmarks(user_id,event_description,event_year) values($1,$2,$3)`, [id, event.description, event.year])
+    const response = await pool.query(`insert into he_bookmarks(user_id,event_description,event_year) values($1,$2,$3)`, [id, event.description, event.year])
     res.status(200).json({ success: true, message: `event successfully bookmarked` })
   }
   catch (err) {
@@ -68,9 +68,9 @@ export async function addEventsLogic(req, res) {
 export async function getEventsLogic(req, res) {
   try {
     const id = req.user, date = req.body.date, day = +(date.split("-")[2]), month = +(date.split("-")[1])
-    const response1 = await pool.query(`select username from users where id=$1`, [id])
+    const response1 = await pool.query(`select username from he_users where id=$1`, [id])
     const username = response1.rows[0].username
-    const response2 = await pool.query(`select event_description from bookmarks where user_id=$1`, [id])
+    const response2 = await pool.query(`select event_description from he_bookmarks where user_id=$1`, [id])
     const likedEvents = response2.rows.map(row => row.event_description)
     const response3 = await fetch(`https://byabbe.se/on-this-day/${month}/${day}/events.json`)
     const data = await response3.json()
@@ -85,7 +85,7 @@ export async function getEventsLogic(req, res) {
 export async function idLogic(req, res) {
   try {
     const id = req.user
-    const response = await pool.query(`select username from users where id=$1`, [id])
+    const response = await pool.query(`select username from he_users where id=$1`, [id])
     const username = response.rows[0].username
     res.status(200).json({ success: true, data: { username } })
   }
@@ -97,7 +97,7 @@ export async function idLogic(req, res) {
 export async function editUsernameLogic(req, res) {
   try {
     const id = req.user, newUsername = req.body.newUsername.trim().toLowerCase()
-    const response = await pool.query(`update users set username=$1,updated_at=NOW() where id=$2`, [newUsername, id])
+    const response = await pool.query(`update he_users set username=$1,updated_at=NOW() where id=$2`, [newUsername, id])
     res.status(200).json({ success: true, message: `username successfully updated` })
   }
   catch (err) {
@@ -114,7 +114,7 @@ export async function editUsernameLogic(req, res) {
 export async function removeEventsLogic(req, res) {
   try {
     const id = req.user, event = req.body.event;
-    const response = await pool.query(`delete from bookmarks where user_id=$1 and event_description=$2`, [id, event.description])
+    const response = await pool.query(`delete from he_bookmarks where user_id=$1 and event_description=$2`, [id, event.description])
     res.status(200).json({ success: true, message: `event removed from bookmarks` })
   }
   catch (err) {
@@ -125,7 +125,7 @@ export async function removeEventsLogic(req, res) {
 export async function likedEventsLogic(req, res) {
   try {
     const id = req.user
-    const response = await pool.query(`select event_description,event_year from bookmarks where user_id=$1`, [id])
+    const response = await pool.query(`select event_description,event_year from he_bookmarks where user_id=$1`, [id])
     res.status(200).json({ success: true, data: { likedEvents: response.rows } })
   }
   catch (err) {
